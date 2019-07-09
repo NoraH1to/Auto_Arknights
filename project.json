@@ -1,0 +1,10 @@
+{
+    "name": "Auto_Arknights",
+    "main": "start.js",
+    "ignore": [
+        "build"
+    ],
+    "packageName": "com.sterbenj.autoArknights",
+    "versionName": "1.0.0",
+    "versionCode": 1
+}
