@@ -1,8 +1,8 @@
 # Auto_Arknights
 
-## 简介
+> 这是一个基于[Auto.js](https://github.com/hyb1996/Auto.js)的项目
 
-- > 这是一个基于[Auto.js](https://github.com/hyb1996/Auto.js)的项目
+## 简介
 
 - 用于解放各位刀客特的双手
 
