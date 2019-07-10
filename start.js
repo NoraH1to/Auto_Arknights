@@ -40,6 +40,29 @@ ui.layout(
     </frame>
 );
 
+// 初始化右上角的菜单
+ui.emitter.on('create_options_menu', menu=>{
+    menu.add('更新日志');
+    menu.add('注意事项');
+    menu.add('关于');
+});
+// 菜单监听
+ui.emitter.on('options_item_selected', (e, item)=>{
+    switch(item.getTitle()){
+        case '更新日志':
+            update_log();
+            break;
+        case '注意事项':
+            notice();
+            break;
+        case '关于':
+            about();
+            break;
+    }
+    e.consumed = true;
+});
+activity.setSupportActionBar(ui.toolbar);
+
 // root权限申请
 var ra = null;
 var mthread = threads.start(function() {
@@ -48,8 +71,6 @@ var mthread = threads.start(function() {
 mthread.join(3000);
 // 注册事件监听
 events.observeKey();
-// 提醒
-alert('1、必须开启root或无障碍服务\n2、除了剿灭外必须三个选项选满\n3、音量上键可以停止所有操作\n4、本软件仅供交流学习，任何使用本软件产生的损失作者概不负责\n5、因为有些关卡图片长得太像（比如芯片的1和2），识别不出来的默认选最难的（CE-1和CE-5会选择CE-5）\n6、关卡必须至少手动代理一次才能识别到（因为代理过一次后的图标不同了）');
 
 /*******************************************************************/
 /*---------------------------无障碍相关-----------------------------*/
@@ -64,7 +85,6 @@ ui.autoService.on("check", function(checked) {
         auto.service.disableSelf();
     }
 });
-ui.autoService.checked = (auto.service != null);
 ui.emitter.on("resume", function() {
     ui.autoService.checked = auto.service != null;
 });
@@ -74,6 +94,50 @@ ui.emitter.on("resume", function() {
 /*******************************************************************/
 /*---------------------------初始化数据工作-------------------------*/
 /*******************************************************************/
+
+
+/**
+ * @description 更新日志
+ */
+function update_log() {
+    alert(
+        '\n1.1.0:'+
+        '\n * 优化判断逻辑，减少失误率'+
+        '\n * 图片改为动态加载，减少崩溃概率'+
+        '\n'+
+        '\n1.0.1:'+
+        '\n * 更新了活动素材'+
+        '\n'+
+        '\n1.0.0:'+
+        '\n * 第一版'
+    );
+}
+
+/**
+ * @description 注意事项
+ */
+function notice() {
+    alert(
+        '1、必须开启无障碍，root给了效率更高'+
+        '\n2、除了剿灭外必须三个选项选满'+
+        '\n3、音量上键可以停止所有操作'+
+        '\n4、本软件仅供交流学习，任何使用本软件产生的损失作者概不负责'+
+        '\n5、因为有些关卡图片长得太像（比如CE-1、2、3、4、5），推荐直接选收益最高的不容易识别错'+
+        '\n6、关卡必须至少手动代理一次才能识别到（因为代理过一次后的图标不同了）'
+    );
+}
+
+
+/**
+ * @description 关于
+ */
+function about() {
+    alert(
+        '酷安 @野良人'+
+        '\n QQ 834053207'+
+        '\n 破群 512249283'
+    )
+}
 
 // 初始化事件列表
 var items = [
@@ -107,8 +171,6 @@ for (var value in activity.dict) {
 
 // 特殊状态
 var activity_status = null;
-
-
 
 
 /*******************************************************************/
