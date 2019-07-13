@@ -194,11 +194,23 @@ events.on('exit', recycle_all);
  * @param {int} y
  */
 function mClick(x, y) {
-    if (root) {
-        ra.press(x, y, 20)
+    if (root && (ra != null)) {
+        console.log('root_click：'+ x + ', ' + y);
+        ra.press(device.width - y,  x, random(40, 60)); // root的点击是个天坑，x轴和y轴不会随着屏幕旋转而旋转，所以暂时就先不用了，等autojs更新
+        mSleep(500);
     } else {
-        click(x, y)
+        console.log('normal_click：'+ x + ', ' + y);
+        click(x, y);
     }
+}
+
+
+/**
+ * @description 在一定事件区间随机休眠
+ * @param {number} time
+ */
+function mSleep(time) {
+    sleep(random(time * 0.8, time * 1.2));
 }
 
 
@@ -217,7 +229,7 @@ function toast_activing() {
  * @returns {boolean} 是否成功
  */
 function click_by_img(img_beclick_path, outside, index) {
-    // 次数
+    // 尝试次数
     var count = 0;
     // 根据传入路径初始化图片
     var img_beclick = images.read(img_beclick_path);
@@ -232,7 +244,7 @@ function click_by_img(img_beclick_path, outside, index) {
         var result_list = images.matchTemplate(device_screen, img_beclick, {
             threshold: 0.8
         })
-        sleep(2000);
+        mSleep(2000);
         // 如果匹配到多个点，选最好的，选错了我也懒得管了wdnmd
         if (result_list.best() != null) {
             result_point = result_list.best().point;
@@ -250,7 +262,7 @@ function click_by_img(img_beclick_path, outside, index) {
             return true
         }
         count++;
-        sleep(2000);   
+        mSleep(2000);   
     }
     // 释放图片资源
     img_beclick.recycle();
@@ -283,7 +295,7 @@ function choose_ZuoZhan() {
 function to_GoGoGo() {
     if (open_main_menu()) {
         console.log('open_menu success!!!');
-        sleep(global_sleep_time);
+        mSleep(global_sleep_time);
         if (choose_ZuoZhan()) {
             activing = active_GoGoGo;
             return true;
@@ -313,13 +325,13 @@ function to_where(str) {
  */
 function mission_start() {
     if (click_by_img(img_mission_start)) {
-        sleep(global_sleep_time);
+        mSleep(global_sleep_time);
         if (click_by_img(img_mission_start_confirm)) {
-            sleep(global_sleep_time_inMission);
+            mSleep(global_sleep_time_inMission);
             while (!click_by_img(img_mission_finish, true)) {
-                sleep(global_sleep_time_inMission);
+                mSleep(global_sleep_time_inMission);
             }
-            sleep(global_sleep_time);
+            mSleep(global_sleep_time);
         }
     }
     return false;
@@ -341,36 +353,46 @@ var action = {};
  * @returns {boolean} 是否成功
  */
 action.start = function(item, newroot) {
+    // 事件循环次数
+    var count = item['count_value'];
     // 是否用root点击
-    root = newroot;
-    if (root && ra == null) {
-        var mthread = threads.start(function() {
-            ra = new RootAutomator();
-        });
-        mthread.join(3000);
-    }
+    // root = newroot;
+    // if (root && (ra == null)) {
+    //     var mthread = threads.start(function() {
+    //         ra = new RootAutomator();
+    //     });
+    //     mthread.join();
+    // }
+    // TODO: root暂时不用了，问题多
     // to作战界面
     while (!to_GoGoGo()) {
         toast('请进入作战页面');
-        sleep(global_sleep_time);
+        mSleep(global_sleep_time);
     }
-    sleep(global_sleep_time);
+    mSleep(global_sleep_time);
     // to part1
     if (to_where(item['part1_value'])) {
-        sleep(global_sleep_time);
+        mSleep(global_sleep_time);
         // to part2
         if (to_where(item['part2_value'])) {
-            sleep(global_sleep_time);
+            mSleep(global_sleep_time);
             // 判断剿灭特殊情况
             if (item['part1_value'] == 'JiaoMie') {
-                mission_start();
+                // 开始作战
+                while (count > 0) {
+                    mission_start();
+                    count--;
+                }
                 return true;
             }
             // to part3
             if (to_where(item['part3_value'])) {
-                sleep(global_sleep_time);
+                mSleep(global_sleep_time);
                 // 开始作战
-                mission_start();
+                while (count > 0) {
+                    mission_start();
+                    count--;
+                }
                 return true;
             }
         }
@@ -397,15 +419,15 @@ function test() {
     part2 = 'CE';
     part3 = 'CE_5';
     if (to_GoGoGo()) {
-        sleep(global_sleep_time);
+        mSleep(global_sleep_time);
         if (to_where(part1)) {
-            sleep(global_sleep_time);
+            mSleep(global_sleep_time);
 
             to_where(part2);
-            sleep(global_sleep_time);
+            mSleep(global_sleep_time);
             
             to_where(part3);
-            sleep(global_sleep_time);
+            mSleep(global_sleep_time);
         }
     }
     mission_start();
