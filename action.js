@@ -1,5 +1,5 @@
 // 全局sleep时间
-const global_sleep_time = 5000;
+const global_sleep_time = 3500;
 const global_sleep_time_inMission = 1000 * 60;
 
 // 当前画面位置
@@ -169,6 +169,30 @@ const img_PR_C_2 = (img_path + '/ZuoZhan/XinPian/PR_C/PR_C_2.png');
 const img_PR_D_1 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_1.png');
 const img_PR_D_2 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_2.png');
 
+/**
+ * 第三章
+ */
+const img_3_8 = (img_path + '/ZuoZhan/ZhuXian/3/3_8.png');
+
+/**
+ * 第四章
+ */
+const img_4_4 = (img_path + '/ZuoZhan/ZhuXian/4/4_4.png');
+const img_4_5 = (img_path + '/ZuoZhan/ZhuXian/4/4_5.png');
+const img_4_6 = (img_path + '/ZuoZhan/ZhuXian/4/4_6.png');
+const img_4_7 = (img_path + '/ZuoZhan/ZhuXian/4/4_7.png');
+const img_4_8 = (img_path + '/ZuoZhan/ZhuXian/4/4_8.png');
+const img_4_9 = (img_path + '/ZuoZhan/ZhuXian/4/4_9.png');
+const img_4_10 = (img_path + '/ZuoZhan/ZhuXian/4/4_10.png');
+
+/**
+ * 第五章
+ */
+const img_5_2 = (img_path + '/ZuoZhan/ZhuXian/5/5_2.png');
+const img_5_5 = (img_path + '/ZuoZhan/ZhuXian/5/5_5.png');
+
+
+
 /*******************************************************************************/
 /*------------------------------------细节实现---------------- -----------------*/
 /*******************************************************************************/
@@ -271,6 +295,45 @@ function click_by_img(img_beclick_path, outside, index) {
 
 
 /**
+ * @description 向右滑动（显示左侧内容）
+ * @param {string} orientation
+ */
+function mSwipe(orientation) {
+    console.log('滑动方向:%s', orientation);
+    // 起始点
+    var y_start = random(device.width * 0.3, device.width * 0.7);
+    var x_start = random(device.height * 0.1, device.height * 0.5);
+    // 结束点
+    var y_end = y_start + random(-device.width * 0.1, device.width * 0.1);
+    var x_end = x_start + random(device.height * 0.25, device.height * 0.35);
+    // 判断滑动方向
+    switch(orientation){
+        case 'left':
+            console.log('起始点:%d, %d  结束点:%d, %d', x_end, y_end, x_start, y_start);
+            swipe(x_end, y_end, x_start, y_start, random(1800, 2000));
+            break;
+        case 'right':
+            console.log('起始点:%d, %d  结束点:%d, %d', x_start, y_start, x_end, y_end);
+            swipe(x_start, y_start, x_end, y_end, random(1800, 2000));
+            break;
+    }
+    console.log('滑动结束');
+}
+
+
+/**
+ * @description 滑动复位到最左侧
+ */
+function swipeReturn() {
+    console.log('正在滑动复位..');
+    for(var i = 0; i < 5; i++) {
+        mSwipe('right');
+        sleep(global_sleep_time);
+    }
+}
+
+
+/**
  * @description 打开跳转菜单
  * @returns {boolean} 是否成功
  */
@@ -312,9 +375,25 @@ function to_GoGoGo() {
  * @returns {boolean} 是否成功
  */
 function to_where(str) {
+    var swipe_count = 0;
+    console.log('stepIn_1');
+    // 如果首次找不到，就复位到最左侧
     if (click_by_img(eval('img_'+str), false)){
+        console.log('stepIn_2');
         return true;
+    } else {
+        console.log('stepIn_3');
+        swipeReturn();
+        // 找不到就往左滑动一次，5次机会
+        while(swipe_count < 5) {
+            if (click_by_img(eval('img_'+str), false)){
+                return true;
+            }
+            mSwipe('left')
+            swipe_count++;
+        }
     }
+    console.log('stepIn_4');
     return false;
 }
 
@@ -370,12 +449,15 @@ action.start = function(item, newroot) {
         mSleep(global_sleep_time);
     }
     mSleep(global_sleep_time);
-    // to part1
+    // to normal part1
+    console.log('step1');
     if (to_where(item['part1_value'])) {
         mSleep(global_sleep_time);
-        // to part2
+        // to normal part2
+        console.log('step2');
         if (to_where(item['part2_value'])) {
             mSleep(global_sleep_time);
+            console.log('step3');
             // 判断剿灭特殊情况
             if (item['part1_value'] == 'JiaoMie') {
                 // 开始作战
@@ -385,7 +467,7 @@ action.start = function(item, newroot) {
                 }
                 return true;
             }
-            // to part3
+            // to normal part3
             if (to_where(item['part3_value'])) {
                 mSleep(global_sleep_time);
                 // 开始作战
