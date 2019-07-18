@@ -170,13 +170,20 @@ const img_PR_D_1 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_1.png');
 const img_PR_D_2 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_2.png');
 
 /**
+ * 第一章
+ */
+const img_1_7 = (img_path + '/ZuoZhan/ZhuXian/1/1_7.png');
+
+/**
  * 第三章
  */
+const img_3_2 = (img_path + '/ZuoZhan/ZhuXian/3/3_2.png');
 const img_3_8 = (img_path + '/ZuoZhan/ZhuXian/3/3_8.png');
 
 /**
  * 第四章
  */
+const img_4_2 = (img_path + '/ZuoZhan/ZhuXian/4/4_2.png');
 const img_4_4 = (img_path + '/ZuoZhan/ZhuXian/4/4_4.png');
 const img_4_5 = (img_path + '/ZuoZhan/ZhuXian/4/4_5.png');
 const img_4_6 = (img_path + '/ZuoZhan/ZhuXian/4/4_6.png');
@@ -266,7 +273,7 @@ function click_by_img(img_beclick_path, outside, index) {
         console.log('device_screen:' + device_screen) // console.log log
         var result_point = null;
         var result_list = images.matchTemplate(device_screen, img_beclick, {
-            threshold: 0.8
+            threshold: 0.9
         })
         mSleep(2000);
         // 如果匹配到多个点，选最好的，选错了我也懒得管了wdnmd

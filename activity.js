@@ -16,7 +16,9 @@ XuZhang.list = [];
 var ZhuXian1 = {};
 ZhuXian1.name = '第一章';
 ZhuXian1.value = 'ZhuXian1';
-ZhuXian1.list = [];
+ZhuXian1.list = [
+    '1_7'
+];
 
 // 第二章
 var ZhuXian2 = {};
@@ -29,7 +31,7 @@ var ZhuXian3 = {};
 ZhuXian3.name = '第三章';
 ZhuXian3.value = 'ZhuXian3';
 ZhuXian3.list = [
-    '3_8'
+    '3_2', '3_8'
 ];
 
 // 第四章
@@ -37,7 +39,7 @@ var ZhuXian4 = {};
 ZhuXian4.name = '第四章';
 ZhuXian4.value = 'ZhuXian4';
 ZhuXian4.list = [
-    '4_4', '4_5', '4_6', '4_7', '4_8', '4_9', '4_10'
+    '4_2', '4_4', '4_5', '4_6', '4_7', '4_8', '4_9', '4_10'
 ];
 
 // 第五章
@@ -53,7 +55,7 @@ ZhuXian.name = '主线';
 ZhuXian.value = 'ZhuXian';
 ZhuXian.list = {
     // 'XuZhang': XuZhang,
-    // 'ZhuXian1': ZhuXian1,
+    'ZhuXian1': ZhuXian1,
     // 'ZhuXian2': ZhuXian2,
     'ZhuXian3': ZhuXian3,
     'ZhuXian4': ZhuXian4,

@@ -129,6 +129,10 @@ ui.autoService.on("check", function(checked) {
  */
 function update_log() {
     alert(
+        '\n1.3.1:'+
+        '\n * 现在可以自律高收益主线关卡了'+
+        '\n * 提高了识别准确度'+
+        '\n'+
         '\n1.2.0:'+
         '\n * 砍掉了root运行方式（问题太多不好使）'+
         '\n * 可以定义一个关卡的次数，提高效率'+
