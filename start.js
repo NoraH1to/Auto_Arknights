@@ -45,15 +45,28 @@ ui.layout(
 // 初始化右上角的菜单
 ui.emitter.on('create_options_menu', menu=>{
     menu.add('设置');
+    menu.add('检测配置文件更新');
+    menu.add('检测缺失素材');
     menu.add('更新日志');
     menu.add('注意事项');
     menu.add('疑难杂症');
+    menu.add('重新下载全部文件');
     menu.add('关于');
 });
 // 菜单监听
 ui.emitter.on('options_item_selected', (e, item)=>{
     switch(item.getTitle()){
         case '设置':
+            break;
+        case '检测配置文件更新':
+            threads.start(function(){
+                check_config_update();
+            });
+            break;
+        case '检测缺失素材':
+            threads.start(function(){
+                check_sucai();
+            });
             break;
         case '更新日志':
             update_log();
@@ -63,6 +76,11 @@ ui.emitter.on('options_item_selected', (e, item)=>{
             break;
         case '疑难杂症':
             question();
+            break;
+        case '重新下载全部文件':
+            threads.start(function(){
+                re_download_all_files();
+            });
             break;
         case '关于':
             about();
@@ -139,13 +157,58 @@ function check_config() {
     if (files.exists('/sdcard/Auto_Arknights/activity.json') && files.exists('/sdcard/Auto_Arknights/imgPath.json')) {
         check_config_update();
     } else {
-        confirm_download_config_dialog('缺少配置文件');
+        download_config('缺少配置文件');
     }
 }
 
 
+
+/**
+ * @description 根据配置文件检查素材完整性
+ */
 function check_sucai() {
-    // TODO: 根据配置文件检查素材
+    // 判断配置文件是否存在
+    if (files.exists('/sdcard/Auto_Arknights/imgPath.json')) {
+        // 需要下载的列表
+        var download_list = [];
+        // 读取配置文件的数据
+        var Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/imgPath.json'))
+        Json_Obj = Json_Obj['data'];
+        // 进度条dialog
+        var dialog = dialogs.build({
+            title: '正在检查素材完整性',
+            content: '',
+            negative: '取消',
+            progress: {
+                max: Object.keys(Json_Obj).length,
+                shwoMinMax: true
+            },
+            canceledOnTouchOutside: false
+        }).on('cancel', function(){
+            threads.shutDownAll();
+        }).show();
+        // 遍历查找是否存在，不存在就加入下载列表
+        var mthread = threads.start(function(){
+            for (var i in Json_Obj) {
+                if (!files.exists(Json_Obj[i]['device_path'])) {
+                    download_list.push(Json_Obj[i]);
+                }
+                dialog.progress += 1;
+            }
+            console.log('缺失素材数量: %d  即将开始下载', download_list.length);
+            toast('缺失素材数量: '+ download_list.length + '  即将开始下载');
+            dialog.dismiss();
+        });
+        mthread.join();
+        // 列表不空就开始下载
+        if (download_list.length > 0) {
+            download_dialog(download_list, '素材');
+        } else {
+            alert('检查完毕，没有缺失素材')
+        }
+    } else {
+        download_config('缺少配置文件');
+    }
 }
 
 
@@ -154,126 +217,179 @@ function check_sucai() {
  * @returns {boolean} 是否成功
  */
 function check_config_update() {
-    // 获取本地版本
-    var local_version = {};
-    var Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
-    local_version['activity'] = Json_Obj['version'];
-    Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/imgPath.json'));
-    local_version['imgPath'] = Json_Obj['version'];
-    // 获取服务器版本
-    var url = "http://norah1to.com:6363/getVersion";
-    var res = http.post(url, {});
-    if (res.statusCode == 200) {
-        var server_version = JSON.parse(res.body.string());
-        if (server_version['activity'] == local_version['activity'] && 
-        server_version['imgPath'] == local_version['imgPath']) {
+    if (files.exists('/sdcard/Auto_Arknights/imgPath.json') && files.exists('/sdcard/Auto_Arknights/activity.json')){
+        // 获取本地版本
+        var local_version = {};
+        var Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
+        local_version['activity'] = Json_Obj['version'];
+        Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/imgPath.json'));
+        local_version['imgPath'] = Json_Obj['version'];
+        // 获取服务器版本
+        var url = "http://norah1to.com:6363/getVersion";
+        var res = http.post(url, {});
+        if (res.statusCode == 200) {
+            var server_version = JSON.parse(res.body.string());
+            if (server_version['activity'] == local_version['activity'] && 
+            server_version['imgPath'] == local_version['imgPath']) {
+                alert('配置文件无需更新');
+            }
+            else {
+                download_config('配置文件发现更新');
+            }
+            return true;
+        } else {
+            return false;
         }
-        else {
-            confirm_download_config_dialog('配置文件发现更新');
-        }
-        return true;
     } else {
-        return false;
+        download_config('配置文件缺失');
+        return true;
     }
 }
 
 
 /**
- * @description 配置文件下载的确认dialog
- * @param {string} title dialog的标题
+ * @description 重新下载全部文件
  */
-function confirm_download_config_dialog(title) {
-    confirm(title, '是否下载？').then(value=>{
-        if (value) {
-            stopActivitys();
-            download_config();
-        } else {
-            toast('缺少配置文件无法运行的嗷');
+function re_download_all_files() {
+    var mthread = threads.start(function(){
+        if (files.removeDir('/sdcard/Auto_Arknights/mySucai')) {
+            console.log('删除素材成功');
+        }
+        if (files.remove('/sdcard/Auto_Arknights/activity.json')) {
+            console.log('删除activity.json成功');
+        }
+        if (files.remove('/sdcard/Auto_Arknights/imgPath.json')) {
+            console.log('imgPath.json成功');
         }
     });
+    mthread.join();
+    download_config('删除所有文件成功');
 }
 
 
 /**
  * @description 下载配置文件
  */
-function download_config() {
-    var info_obj = {
-        'activity': {
+function download_config(title) {
+    var info_list = [
+        {
             'device_path': '/sdcard/Auto_Arknights/activity.json',
             'server_path': '/static/for_download/activity.json'
         },
-        'imgPath': {
+        {
             'device_path': '/sdcard/Auto_Arknights/imgPath.json',
             'server_path': '/static/for_download/imgPath.json'
         }
-    };
-    download_dialog(info_obj);
+    ];
+    confirm_download_dialog(title, info_list, '配置文件');
 }
 
 
 /**
- * @description 下载文件的通用dialog
- * @param {Object} info_obj 多条路径信息对象
+ * @description 配置文件下载的确认dialog
+ * @param {string} title dialog的标题
+ * @param {string} type 下载类型
  */
-function download_dialog(info_obj) {
-    var success = 0;
-    var fail = 0;
-    var dialog = dialogs.build({
-        title: '正在下载',
-        content: '',
-        negative: '取消',
-        progress: {
-            max: Object.keys(info_obj).length,
-            shwoMinMax: true
-        },
-        canceledOnTouchOutside: false
-    }).on('cancel', function(){
-        threads.shutDownAll();
-        self.dismiss();
-    }).show();
-    // 开启下载线程
-    var download_thread = threads.start(function() {
-        for (var i in info_obj){
-            if (download(info_obj[i])) {
-                success++;
-            } else {
-                fail++;
-            }
-            dialog.progress += 1;
+function confirm_download_dialog(title, info_list, type) {
+    confirm(title, '是否下载？', function(value){
+        if (value) {
+            stopActivitys();
+            download_dialog(info_list, type);
+        } else {
+            return false;
         }
-        dialog.dismiss();
-        toast('下载完成, 成功' + success + '个, 失败' + fail + '个');
-        // 每次下载完成，根据配置文件检查素材
-
     });
 }
 
 
 /**
+ * @description 下载文件的通用dialog
+ * @param {Object} info_list 多条路径信息对象
+ * @param {string} type 下载类型
+ */
+function download_dialog(info_list, type) {
+    var success = 0;
+    var fail = 0;
+    var dialog = dialogs.build({
+        title: '正在下载' + type,
+        content: '',
+        negative: '取消',
+        progress: {
+            max: info_list.length,
+            shwoMinMax: true
+        },
+        canceledOnTouchOutside: false
+    }).on('cancel', function(){
+        threads.shutDownAll();
+    }).show();
+    threads.start(function(){
+        // 开启下载线程
+        var download_thread = threads.start(function() {
+            for (var i in info_list){
+                if (download(info_list[i])) {
+                    success++;
+                } else {
+                    fail++;
+                }
+                dialog.progress += 1;
+            }
+            dialog.dismiss();
+            alert('下载完成, 成功' + success + '个, 失败' + fail + '个');
+        });
+        download_thread.join();
+        // 检查素材
+        check_sucai();
+    })
+}
+
+
+/**
  * @description 通用的下载方法
- * @param {Object} info 单条路径信息对象
+ * @param {Object} info_obj 单条路径信息对象
  * @returns {boolean} 是否成功
  */
-function download(info) {
-    var url = "http://norah1to.com:6363/download/?path=" + info['server_path'];
-    var res = http.post(url, {});
-    if (res.statusCode == 200) {
-        var Json_str = res.body.string();
-        // 判断路径是否存在
-        if (!files.exists(info['device_path'])) {
-            console.log('正在创建文件');
-            if (files.createWithDirs(info['device_path'])) {
-            } else {
-                return false;
+function download(info_obj, type) {
+    var url = "http://norah1to.com:6363/download/?path=" + info_obj['server_path'];
+    // 图片的话就用别的方法保存
+    if (url.indexOf('.png') != -1) {
+        var img = images.load(url);
+        if (img != null) {
+            console.log('读取图片成功');
+            console.log('正在保存图片')
+            // 判断路径是否存在
+            if (!files.exists(info_obj['device_path'])) {
+                console.log('正在创建文件');
+                if (files.createWithDirs(info_obj['device_path'])) {
+                } else {
+                    return false;
+                }
             }
+            images.save(img, info_obj['device_path'], 'png', 100);
+            console.log('图片保存完毕')
+            return true;
+        } else {
+            console.log('读取不到图片');
+            return false;
         }
-        console.log("正在复写文件");
-        files.write(info['device_path'], Json_str);
-        console.log('复写文件成功');
-        return true;
     } else {
-        return false
+        var res = http.post(url, {});
+        if (res.statusCode == 200) {
+            var Json_str = res.body.string();
+            // 判断路径是否存在
+            if (!files.exists(info_obj['device_path'])) {
+                console.log('正在创建文件');
+                if (files.createWithDirs(info_obj['device_path'])) {
+                } else {
+                    return false;
+                }
+            }
+            console.log("正在复写文件");
+            files.write(info_obj['device_path'], Json_str);
+            console.log('复写文件成功');
+            return true;
+        } else {
+            return false
+        }
     }
 }
 
