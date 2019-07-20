@@ -183,7 +183,6 @@ const img_3_8 = (img_path + '/ZuoZhan/ZhuXian/3/3_8.png');
 /**
  * 第四章
  */
-const img_4_2 = (img_path + '/ZuoZhan/ZhuXian/4/4_2.png');
 const img_4_4 = (img_path + '/ZuoZhan/ZhuXian/4/4_4.png');
 const img_4_5 = (img_path + '/ZuoZhan/ZhuXian/4/4_5.png');
 const img_4_6 = (img_path + '/ZuoZhan/ZhuXian/4/4_6.png');
@@ -438,18 +437,9 @@ var action = {};
  * @param {*} item 事件列表中的item
  * @returns {boolean} 是否成功
  */
-action.start = function(item, newroot) {
+action.start = function(item) {
     // 事件循环次数
     var count = item['count_value'];
-    // 是否用root点击
-    // root = newroot;
-    // if (root && (ra == null)) {
-    //     var mthread = threads.start(function() {
-    //         ra = new RootAutomator();
-    //     });
-    //     mthread.join();
-    // }
-    // TODO: root暂时不用了，问题多
     // to作战界面
     while (!to_GoGoGo()) {
         toast('请进入作战页面');

@@ -44,6 +44,7 @@ ui.layout(
 
 // 初始化右上角的菜单
 ui.emitter.on('create_options_menu', menu=>{
+    menu.add('设置');
     menu.add('更新日志');
     menu.add('注意事项');
     menu.add('疑难杂症');
@@ -52,6 +53,8 @@ ui.emitter.on('create_options_menu', menu=>{
 // 菜单监听
 ui.emitter.on('options_item_selected', (e, item)=>{
     switch(item.getTitle()){
+        case '设置':
+            break;
         case '更新日志':
             update_log();
             break;
@@ -71,20 +74,21 @@ activity.setSupportActionBar(ui.toolbar);
 
 // 初始化动作类
 var action = null;
-// root权限申请
-var ra = null;
-// threads.start(function() {
-//     ra = new RootAutomator();
-// });
-// TODO: root的api问题过多，暂时不用，等autojs作者更新完善
 
 // 监听回到应用时有无无障碍
 ui.emitter.on("resume", function() {
     ui.autoService.checked = auto.service != null;
-    events.observeKey();
-    // 引入动作类
-    if (action == null) {
-        action = require('./action.js');
+    if (auto.service != null) {
+        events.observeKey();
+        // 引入动作类
+        if (action == null) {
+            action = require('./action.js');
+        }
+    } else {
+        alert('请先开启\"Auto_Arknights\"的无障碍服务')
+        app.startActivity({
+            action: "android.settings.ACCESSIBILITY_SETTINGS"
+        });
     }
 });
 
@@ -106,6 +110,8 @@ if (auto.service != null) {
 /*******************************************************************/
 /*---------------------------无障碍相关-----------------------------*/
 /*******************************************************************/
+
+
 ui.autoService.on("check", function(checked) {
     if(checked && auto.service == null) {
         app.startActivity({
@@ -116,6 +122,162 @@ ui.autoService.on("check", function(checked) {
         auto.service.disableSelf();
     }
 });
+
+
+
+/*******************************************************************/
+/*---------------------------配置文件检查等-------------------------*/
+/*******************************************************************/
+
+check_config();
+
+
+/**
+ * @description 检查是否有配置文件
+ */
+function check_config() {
+    if (files.exists('/sdcard/Auto_Arknights/activity.json') && files.exists('/sdcard/Auto_Arknights/imgPath.json')) {
+        check_config_update();
+    } else {
+        confirm_download_config_dialog('缺少配置文件');
+    }
+}
+
+
+function check_sucai() {
+    // TODO: 根据配置文件检查素材
+}
+
+
+/**
+ * @description 连接服务器检查配置更新
+ * @returns {boolean} 是否成功
+ */
+function check_config_update() {
+    // 获取本地版本
+    var local_version = {};
+    var Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
+    local_version['activity'] = Json_Obj['version'];
+    Json_Obj = JSON.parse(files.read('/sdcard/Auto_Arknights/imgPath.json'));
+    local_version['imgPath'] = Json_Obj['version'];
+    // 获取服务器版本
+    var url = "http://norah1to.com:6363/getVersion";
+    var res = http.post(url, {});
+    if (res.statusCode == 200) {
+        var server_version = JSON.parse(res.body.string());
+        if (server_version['activity'] == local_version['activity'] && 
+        server_version['imgPath'] == local_version['imgPath']) {
+        }
+        else {
+            confirm_download_config_dialog('配置文件发现更新');
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+/**
+ * @description 配置文件下载的确认dialog
+ * @param {string} title dialog的标题
+ */
+function confirm_download_config_dialog(title) {
+    confirm(title, '是否下载？').then(value=>{
+        if (value) {
+            stopActivitys();
+            download_config();
+        } else {
+            toast('缺少配置文件无法运行的嗷');
+        }
+    });
+}
+
+
+/**
+ * @description 下载配置文件
+ */
+function download_config() {
+    var info_obj = {
+        'activity': {
+            'device_path': '/sdcard/Auto_Arknights/activity.json',
+            'server_path': '/static/for_download/activity.json'
+        },
+        'imgPath': {
+            'device_path': '/sdcard/Auto_Arknights/imgPath.json',
+            'server_path': '/static/for_download/imgPath.json'
+        }
+    };
+    download_dialog(info_obj);
+}
+
+
+/**
+ * @description 下载文件的通用dialog
+ * @param {Object} info_obj 多条路径信息对象
+ */
+function download_dialog(info_obj) {
+    var success = 0;
+    var fail = 0;
+    var dialog = dialogs.build({
+        title: '正在下载',
+        content: '',
+        negative: '取消',
+        progress: {
+            max: Object.keys(info_obj).length,
+            shwoMinMax: true
+        },
+        canceledOnTouchOutside: false
+    }).on('cancel', function(){
+        threads.shutDownAll();
+        self.dismiss();
+    }).show();
+    // 开启下载线程
+    var download_thread = threads.start(function() {
+        for (var i in info_obj){
+            if (download(info_obj[i])) {
+                success++;
+            } else {
+                fail++;
+            }
+            dialog.progress += 1;
+        }
+        dialog.dismiss();
+        toast('下载完成, 成功' + success + '个, 失败' + fail + '个');
+        // 每次下载完成，根据配置文件检查素材
+
+    });
+}
+
+
+/**
+ * @description 通用的下载方法
+ * @param {Object} info 单条路径信息对象
+ * @returns {boolean} 是否成功
+ */
+function download(info) {
+    var url = "http://norah1to.com:6363/download/?path=" + info['server_path'];
+    var res = http.post(url, {});
+    if (res.statusCode == 200) {
+        var Json_str = res.body.string();
+        // 判断路径是否存在
+        if (!files.exists(info['device_path'])) {
+            console.log('正在创建文件');
+            if (files.createWithDirs(info['device_path'])) {
+            } else {
+                return false;
+            }
+        }
+        console.log("正在复写文件");
+        files.write(info['device_path'], Json_str);
+        console.log('复写文件成功');
+        return true;
+    } else {
+        return false
+    }
+}
+
+
 
 
 
@@ -156,11 +318,11 @@ function update_log() {
 function notice() {
     alert(
         '1、必须开启无障碍服务'+
-        '\n2、除了剿灭外必须三个选项选满'+
+        '\n2、除了剿灭外必须四个选项选满'+
         '\n3、音量上键可以停止所有操作'+
         '\n4、本软件仅供交流学习，任何使用本软件产生的损失作者概不负责'+
         '\n5、因为有些关卡图片长得太像（比如CE-1、2、3、4、5），推荐直接选收益最高的不容易识别错'+
-        '\n6、关卡必须至少手动代理一次才能识别到（因为代理过一次后的图标不同了）'
+        '\n6、关卡必须至少手动放弃一次才能识别到（因为没有放弃过的关卡图标较特殊）'
     );
 }
 
@@ -209,7 +371,7 @@ var activity = require('./activity.js');
 
 // 三个dialog列表选择
 var dialog_list_1 = [];
-var dialog_list_1_value = {}
+var dialog_list_1_value = {};
 var dialog_list_2 = [];
 var dialog_list_2_value = {};
 var dialog_list_3 = [];
@@ -373,7 +535,7 @@ function startActivitys() {
             // 开始事件
             var mThread =  threads.start(function() {
                 console.log(items[index].part3_value);
-                action.start(items[index], !(ra == null));
+                action.start(items[index]);
             })
             // 等待事件结束
             mThread.join();
