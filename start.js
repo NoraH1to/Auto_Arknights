@@ -482,9 +482,6 @@ ui.todoList.on('item_bind', function(itemView, itemHolder){
     });
 });
 
-// 引入各种事件的类
-var activity = require('./activity.js');
-
 // 三个dialog列表选择
 var dialog_list_1 = [];
 var dialog_list_1_value = {};
@@ -493,11 +490,59 @@ var dialog_list_2_value = {};
 var dialog_list_3 = [];
 var dialog_list_3_value = {};
 
-// 初始化第一个dialog列表
-for (var value in activity.dict) {
-    dialog_list_1.push(activity.dict[value].name);
-    dialog_list_1_value[activity.dict[value].name] = activity.dict[value].value;
+// 预先载入json配置
+var activity_Json = null;
+if (files.exists('/sdcard/Auto_Arknights/activity.json')) {
+    activity_Json = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
+    console.log('事件配置载入成功');
+} else {
+    console.log('找不到事件配置！');
 }
+
+
+/**
+ * @description 初始化一个dialog中的列表
+ * @param {list} info_list 配置文件中的数据对象列表
+ * @param {string} dialog_list ui显示列表变量string
+ * @param {string} dialog_value_list 真值列表变量string
+ */
+function init_dialog_list(info_list, dialog_list, dialog_value_list) {
+    for (var i in info_list) {
+        eval(dialog_list).push(info_list[i]['name']);
+        eval(dialog_value_list)[info_list[i]['name']] = info_list[i]['value'];
+    }
+}
+
+
+/**
+ * @description 初始化第一个dialog列表
+ */
+function init_first_dialog_list() {
+    var info_list = activity_Json['data'];
+    init_dialog_list(info_list, 'dialog_list_1', 'dialog_list_1_value');
+}
+
+
+/**
+ * @description 初始化第二个dialog列表
+ */
+function init_second_dialog_list() {
+    var info_list = activity_Json['data'][dialog_list_1_value[ui.sp1.getText()]]['list'];
+    init_dialog_list(info_list, 'dialog_list_2', 'dialog_list_2_value');
+}
+
+
+/**
+ * @description 初始化第三个dialog的列表
+ */
+function init_third_dialog_list() {
+    var info_list = activity_Json['data'][dialog_list_1_value[ui.sp1.getText()]]['list'][dialog_list_2_value[ui.sp2.getText()]]['list'];
+    init_dialog_list(info_list, 'dialog_list_3', 'dialog_list_3_value');
+}
+
+
+// 初始化第一个dialog列表
+init_first_dialog_list();
 
 // 特殊状态
 var activity_status = null;
@@ -525,11 +570,7 @@ function build_dialog_1() {
         dialog_list_2_value = {};
         dialog_list_3 = [];
         dialog_list_3_value = {};
-        // 给下一个选项赋予对应的子列表
-        for (var value in activity.dict[dialog_list_1_value[name]].list) {
-            dialog_list_2.push(activity.dict[dialog_list_1_value[name]].list[value].name)
-            dialog_list_2_value[activity.dict[dialog_list_1_value[name]].list[value].name] = activity.dict[dialog_list_1_value[name]].list[value].value;
-        }
+        init_second_dialog_list();
     }).show();
 }
 // part2 dialog
@@ -544,14 +585,12 @@ function build_dialog_2() {
         dialog_list_3 = [];
         dialog_list_3_value = {};
         // 给下一个选项赋予对应的子列表
+        // 判断剿灭特殊情况
         if (ui.sp1.getText() === '剿灭作战') {
             ui.sp3.setText('无');
             return;
         }
-        for (var value of activity.dict[dialog_list_1_value[ui.sp1.getText()]].list[dialog_list_2_value[name]].list) {
-            dialog_list_3.push(value)
-            dialog_list_3_value[value] = value;
-        }
+        init_third_dialog_list();
     }).show();
 }
 // part3 dialog
