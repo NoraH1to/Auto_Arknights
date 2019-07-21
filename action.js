@@ -1,208 +1,44 @@
-// 全局sleep时间
+// 全局配置
 const global_sleep_time = 3500;
 const global_sleep_time_inMission = 1000 * 60;
+const global_swipe_sleep_tile = 5000;
+const global_click_count = 2;
 
-// 当前画面位置
-var activing = null;
-// part1位置
-const active_GoGoGo = 'GoGoGo'; // 作战页面
-const active_WuZi = 'WuZi';
-const active_XinPian = 'XinPian';
-// part2位置
-const active_XuZhang = 'XuZhang'; // 序章
-const active_ZhuXian1 = 'ZhuXian1'; // 主线1
-const active_ZhuXian2 = 'ZhuXian2'; // 主线2
-const active_ZhuXian3 = 'ZhuXian3'; // 主线3
-const active_ZhuXian4 = 'ZhuXian4'; // 主线4
-const active_LS = 'LS'; // 经验
-const active_CA = 'CA'; // 技能书
-const active_SK = 'SK'; // 基建材料
-const active_CE = 'CE'; // 龙门币
-const active_AP = 'AP'; // 采购凭证
-const active_PR_B = 'PR_B'; // 狙击、术士芯片
-const active_PR_C = 'PR_C'; // 先锋、辅助芯片
-const active_PR_A = 'PR_A'; // 重装、医疗芯片
-const active_PR_D = 'PR_D'; // 近卫、特种芯片
-
-// 素材根目录
-const img_path = './mySucai';
-// 初始化关卡自动化图片素材
-const img_mission_start = (img_path + '/mission_control/start.png');
-const img_mission_start_confirm = (img_path + '/mission_control/start_confirm.png');
-const img_mission_finish = (img_path + '/mission_control/finish.png');
-
-// 菜单操作相关的图片
-const img_main_open_menu = (img_path + '/open_main_menu.png');
-const img_choose_menu_ZuoZhan = (img_path + '/menu_choose_ZuoZhan.png');
 
 // root操作对象初始化
 var ra = null;
 var root = false;
 
-/*******************************************************************************/
-/*------------------------------------part1------------------------------------*/
-/*******************************************************************************/
-
-const img_ZhuXian = (img_path + '/ZuoZhan/zx.png');
-const img_WuZi = (img_path + '/ZuoZhan/wz.png');
-const img_XinPian = (img_path + '/ZuoZhan/xp.png');
-const img_JiaoMie = (img_path + '/ZuoZhan/jm.png');
-
-
-
-
-/*******************************************************************************/
-/*------------------------------------part2------------------------------------*/
-/*******************************************************************************/
-
-/**
- * Normal
- */
-// 主线选择章节图片
-const img_XuZhang = (img_path + '/ZuoZhan/ZhuXian/0/in.png');
-const img_ZhuXian1 = (img_path + '/ZuoZhan/ZhuXian/1/in.png');
-const img_ZhuXian2 = (img_path + '/ZuoZhan/ZhuXian/2/in.png');
-const img_ZhuXian3 = (img_path + '/ZuoZhan/ZhuXian/3/in.png');
-const img_ZhuXian4 = (img_path + '/ZuoZhan/ZhuXian/4/in.png');
-// 物资选择类型
-const img_LS = (img_path + '/ZuoZhan/WuZi/LS/in.png');
-const img_AP = (img_path + '/ZuoZhan/WuZi/AP/in.png');
-const img_CE = (img_path + '/ZuoZhan/WuZi/CE/in.png');
-const img_CA = (img_path + '/ZuoZhan/WuZi/CA/in.png');
-const img_SK = (img_path + '/ZuoZhan/WuZi/SK/in.png');
-// 芯片选择类型
-const img_PR_A =  (img_path + '/ZuoZhan/XinPian/PR_A/in.png');
-const img_PR_B =  (img_path + '/ZuoZhan/XinPian/PR_B/in.png');
-const img_PR_C = (img_path + '/ZuoZhan/XinPian/PR_C/in.png');
-const img_PR_D = (img_path + '/ZuoZhan/XinPian/PR_D/in.png');
-// 剿灭选择类型
-const img_QieEr = (img_path + '/ZuoZhan/JiaoMie/QieEr.png');
-const img_LongMenWai = (img_path + '/ZuoZhan/JiaoMie/LongMenWaiHuan.png');
-
-/**
- * Allclear
- */
-// 物资全开
-const img_LS_allclear = (img_path + '/ZuoZhan/WuZi/LS/in_allclear.png');
-const img_AP_allclear = (img_path + '/ZuoZhan/WuZi/AP/in_allclear.png');
-const img_CE_allclear = (img_path + '/ZuoZhan/WuZi/CE/in_allclear.png');
-const img_CA_allclear = (img_path + '/ZuoZhan/WuZi/CA/in_allclear.png');
-const img_SK_allclear = (img_path + '/ZuoZhan/WuZi/SK/in_allclear.png');
-// 芯片全开
-const img_PR_A_allclear =  (img_path + '/ZuoZhan/XinPian/PR_A/in_allclear.png');
-const img_PR_B_allclear =  (img_path + '/ZuoZhan/XinPian/PR_B/in_allclear.png');
-const img_PR_C_allclear = (img_path + '/ZuoZhan/XinPian/PR_C/in_allclear.png');
-const img_PR_D_allclear = (img_path + '/ZuoZhan/XinPian/PR_D/in_allclear.png');
-
-
-
-/*******************************************************************************/
-/*------------------------------------part3------------------------------------*/
-/*******************************************************************************/
-
-/**
- * CE
- */
-const img_CE_1 = (img_path + '/ZuoZhan/WuZi/CE/CE_1.png');
-const img_CE_2 = (img_path + '/ZuoZhan/WuZi/CE/CE_2.png');
-const img_CE_3 = (img_path + '/ZuoZhan/WuZi/CE/CE_3.png');
-const img_CE_4 = (img_path + '/ZuoZhan/WuZi/CE/CE_4.png');
-const img_CE_5 = (img_path + '/ZuoZhan/WuZi/CE/CE_5.png');
-
-/**
- * AP
- */
-const img_AP_1 = (img_path + '/ZuoZhan/WuZi/AP/AP_1.png');
-const img_AP_2 = (img_path + '/ZuoZhan/WuZi/AP/AP_2.png');
-const img_AP_3 = (img_path + '/ZuoZhan/WuZi/AP/AP_3.png');
-const img_AP_4 = (img_path + '/ZuoZhan/WuZi/AP/AP_4.png');
-const img_AP_5 = (img_path + '/ZuoZhan/WuZi/AP/AP_5.png');
-
-/**
- * CA
- */
-const img_CA_1 = (img_path + '/ZuoZhan/WuZi/CA/CA_1.png');
-const img_CA_2 = (img_path + '/ZuoZhan/WuZi/CA/CA_2.png');
-const img_CA_3 = (img_path + '/ZuoZhan/WuZi/CA/CA_3.png');
-const img_CA_4 = (img_path + '/ZuoZhan/WuZi/CA/CA_4.png');
-const img_CA_5 = (img_path + '/ZuoZhan/WuZi/CA/CA_5.png');
-
-/**
- * LS
- */
-const img_LS_1 = (img_path + '/ZuoZhan/WuZi/LS/LS_1.png');
-const img_LS_2 = (img_path + '/ZuoZhan/WuZi/LS/LS_2.png');
-const img_LS_3 = (img_path + '/ZuoZhan/WuZi/LS/LS_3.png');
-const img_LS_4 = (img_path + '/ZuoZhan/WuZi/LS/LS_4.png');
-const img_LS_5 = (img_path + '/ZuoZhan/WuZi/LS/LS_5.png');
-
-/**
- * SK
- */
-const img_SK_1 = (img_path + '/ZuoZhan/WuZi/SK/SK_1.png');
-const img_SK_2 = (img_path + '/ZuoZhan/WuZi/SK/SK_2.png');
-const img_SK_3 = (img_path + '/ZuoZhan/WuZi/SK/SK_3.png');
-const img_SK_4 = (img_path + '/ZuoZhan/WuZi/SK/SK_4.png');
-const img_SK_5 = (img_path + '/ZuoZhan/WuZi/SK/SK_5.png');
-
-/**
- * PR_A
- */
-const img_PR_A_1 = (img_path + '/ZuoZhan/XinPian/PR_A/PR_A_1.png');
-const img_PR_A_2 = (img_path + '/ZuoZhan/XinPian/PR_A/PR_A_2.png');
-
-/**
- * PR_B
- */
-const img_PR_B_1 = (img_path + '/ZuoZhan/XinPian/PR_B/PR_B_1.png');
-const img_PR_B_2 = (img_path + '/ZuoZhan/XinPian/PR_B/PR_B_2.png');
-
-/**
- * PR_C
- */
-const img_PR_C_1 = (img_path + '/ZuoZhan/XinPian/PR_C/PR_C_1.png');
-const img_PR_C_2 = (img_path + '/ZuoZhan/XinPian/PR_C/PR_C_2.png');
-
-/**
- * PR_D
- */
-const img_PR_D_1 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_1.png');
-const img_PR_D_2 = (img_path + '/ZuoZhan/XinPian/PR_D/PR_D_2.png');
-
-/**
- * 第一章
- */
-const img_1_7 = (img_path + '/ZuoZhan/ZhuXian/1/1_7.png');
-
-/**
- * 第三章
- */
-const img_3_2 = (img_path + '/ZuoZhan/ZhuXian/3/3_2.png');
-const img_3_8 = (img_path + '/ZuoZhan/ZhuXian/3/3_8.png');
-
-/**
- * 第四章
- */
-const img_4_4 = (img_path + '/ZuoZhan/ZhuXian/4/4_4.png');
-const img_4_5 = (img_path + '/ZuoZhan/ZhuXian/4/4_5.png');
-const img_4_6 = (img_path + '/ZuoZhan/ZhuXian/4/4_6.png');
-const img_4_7 = (img_path + '/ZuoZhan/ZhuXian/4/4_7.png');
-const img_4_8 = (img_path + '/ZuoZhan/ZhuXian/4/4_8.png');
-const img_4_9 = (img_path + '/ZuoZhan/ZhuXian/4/4_9.png');
-const img_4_10 = (img_path + '/ZuoZhan/ZhuXian/4/4_10.png');
-
-/**
- * 第五章
- */
-const img_5_2 = (img_path + '/ZuoZhan/ZhuXian/5/5_2.png');
-const img_5_5 = (img_path + '/ZuoZhan/ZhuXian/5/5_5.png');
-
+// 预先载入json配置
+var imgPath_Json = null;
+if (files.exists('/sdcard/Auto_Arknights/imgPath.json')) {
+    imgPath_Json = JSON.parse(files.read('/sdcard/Auto_Arknights/imgPath.json'));
+    console.log('图片配置载入成功');
+} else {
+    console.log('找不到图片配置！');
+}
 
 
 /*******************************************************************************/
 /*------------------------------------细节实现---------------- -----------------*/
 /*******************************************************************************/
 
+
+/**
+ * @description 根据name从配置中获取设备的图片地址
+ * @param {string} name
+ * @returns {*} 成功返回地址，失败返回false
+ */
+function getLocalImgPath(name) {
+    var path = '';
+    if (imgPath_Json != null) {
+        path = imgPath_Json['data'][name]['device_path'];
+        console.log('获取图片地址成功: %s', path);
+        return path;
+    }
+    console.log('获取图片地址失败');
+    return false
+}
 
 
 /**
@@ -243,15 +79,6 @@ function mSleep(time) {
     sleep(random(time * 0.8, time * 1.2));
 }
 
-
-/**
- * @description 输出现在的界面
- */
-function toast_activing() {
-    console.log('现在的界面是：' + activing);
-}
-
-
 /**
  * @description 根据图片素材点击位置
  * @param {images} img_beclick 准备要点击的图片
@@ -263,8 +90,8 @@ function click_by_img(img_beclick_path, outside, index) {
     var count = 0;
     // 根据传入路径初始化图片
     var img_beclick = images.read(img_beclick_path);
-    // 找3次找不到就失败
-    while (count < 3) {
+    // 找多次找不到就失败
+    while (count < global_click_count) {
         console.log(img_beclick_path + "count" + count);
         // 在当前画面找
         console.log('img_beclick:' + img_beclick);
@@ -301,8 +128,8 @@ function click_by_img(img_beclick_path, outside, index) {
 
 
 /**
- * @description 向右滑动（显示左侧内容）
- * @param {string} orientation
+ * @description 滑动
+ * @param {string} orientation 反向
  */
 function mSwipe(orientation) {
     console.log('滑动方向:%s', orientation);
@@ -334,7 +161,7 @@ function swipeReturn() {
     console.log('正在滑动复位..');
     for(var i = 0; i < 5; i++) {
         mSwipe('right');
-        sleep(global_sleep_time);
+        sleep(global_swipe_sleep_tile);
     }
 }
 
@@ -344,7 +171,7 @@ function swipeReturn() {
  * @returns {boolean} 是否成功
  */
 function open_main_menu() {
-    return click_by_img(img_main_open_menu, false);
+    return click_by_img(getLocalImgPath('img_main_open_menu'), false);
 }
 
 
@@ -353,7 +180,7 @@ function open_main_menu() {
  * @returns {boolean} 是否成功
  */
 function choose_ZuoZhan() {
-    return click_by_img(img_choose_menu_ZuoZhan, false);
+    return click_by_img(getLocalImgPath('img_choose_menu_ZuoZhan'), false);
 }
 
 
@@ -366,7 +193,6 @@ function to_GoGoGo() {
         console.log('open_menu success!!!');
         mSleep(global_sleep_time);
         if (choose_ZuoZhan()) {
-            activing = active_GoGoGo;
             return true;
         }
     }
@@ -384,7 +210,7 @@ function to_where(str) {
     var swipe_count = 0;
     console.log('stepIn_1');
     // 如果首次找不到，就复位到最左侧
-    if (click_by_img(eval('img_'+str), false)){
+    if (click_by_img(getLocalImgPath('img_'+str), false)){
         console.log('stepIn_2');
         return true;
     } else {
@@ -392,10 +218,11 @@ function to_where(str) {
         swipeReturn();
         // 找不到就往左滑动一次，5次机会
         while(swipe_count < 5) {
-            if (click_by_img(eval('img_'+str), false)){
+            if (click_by_img(getLocalImgPath('img_'+str), false)){
                 return true;
             }
             mSwipe('left')
+            sleep(global_swipe_sleep_tile);
             swipe_count++;
         }
     }
@@ -409,11 +236,11 @@ function to_where(str) {
  * @returns {boolean} 是否成功
  */
 function mission_start() {
-    if (click_by_img(img_mission_start)) {
+    if (click_by_img(getLocalImgPath('img_mission_start'))) {
         mSleep(global_sleep_time);
-        if (click_by_img(img_mission_start_confirm)) {
+        if (click_by_img(getLocalImgPath('img_mission_start_confirm'))) {
             mSleep(global_sleep_time_inMission);
-            while (!click_by_img(img_mission_finish, true)) {
+            while (!click_by_img(getLocalImgPath('img_mission_finish'), true)) {
                 mSleep(global_sleep_time_inMission);
             }
             mSleep(global_sleep_time);
