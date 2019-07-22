@@ -6,8 +6,8 @@ function global_sleep_time() {
 function global_sleep_time_inMission() {
     return parseInt(mStorage.get('global_sleep_time_inMission'));
 }
-function global_swipe_sleep_tile() {
-    return parseInt(mStorage.get('global_swipe_sleep_tile'));
+function global_swipe_sleep_time() {
+    return parseInt(mStorage.get('global_swipe_sleep_time'));
 }
 function global_click_count() {
     return parseInt(mStorage.get('global_click_count'));
@@ -171,7 +171,7 @@ function swipeReturn() {
     console.log('正在滑动复位..');
     for(var i = 0; i < 5; i++) {
         mSwipe('right');
-        sleep(global_swipe_sleep_tile());
+        sleep(global_swipe_sleep_time());
     }
 }
 
@@ -233,7 +233,7 @@ function to_where(str, jindu) {
                 return true;
             }
             mSwipe('left')
-            sleep(global_swipe_sleep_tile());
+            sleep(global_swipe_sleep_time());
             swipe_count++;
         }
     }

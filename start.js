@@ -48,6 +48,7 @@ ui.emitter.on('create_options_menu', menu=>{
     menu.add('检测配置文件更新');
     menu.add('检测缺失素材');
     menu.add('清除配置文件');
+    menu.add('清除日志缓存');
     menu.add('食用指南');
     menu.add('关于');
 });
@@ -75,6 +76,9 @@ ui.emitter.on('options_item_selected', (e, item)=>{
                 re_download_all_files();
             });
             break;
+        case '清除日志缓存':
+            reset_log();
+            break;
         case '关于':
             engines.execScriptFile('./view/about.js');
             break;
@@ -87,6 +91,10 @@ activity.setSupportActionBar(ui.toolbar);
 var action = null;
 // 初始化本地储存键值对
 var mStorage = storages.create('settings');
+// 初始化日志目录
+console.setGlobalLogConfig({
+    "file": "/sdcard/Auto_Arknights/log.txt"
+});
 
 // 监听回到应用时有无无障碍
 ui.emitter.on("resume", function() {
@@ -262,6 +270,19 @@ function check_config_update() {
         download_config('配置文件缺失');
         return true;
     }
+}
+
+
+/**
+ * @description 清除日志缓存
+ */
+function reset_log() {
+    files.remove('/sdcard/Auto_Arknights/log.txt');
+    files.createWithDirs('/sdcard/Auto_Arknights/log.txt');
+    console.setGlobalLogConfig({
+        "file": "/sdcard/Auto_Arknights/log.txt"
+    });
+    toast('缓存清除完毕');
 }
 
 
@@ -657,11 +678,12 @@ function startActivitys() {
             '3: 本软件为开源项目，不得魔改后商用发布(非商业可以)'
         )
     }
-    toast('事件开始');
     // 事件列表不能为空
     if (items.length < 1) {
+        toast('事件列表为空');
         return false;
     }
+    toast('事件开始');
     // 请求截图权限并设置截图方向
     var setScreenThread = threads.start(function() {
         if (!requestScreenCapture(true)) {
