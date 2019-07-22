@@ -1,8 +1,17 @@
-// 全局配置
-const global_sleep_time = 3500;
-const global_sleep_time_inMission = 1000 * 60;
-const global_swipe_sleep_tile = 5000;
-const global_click_count = 2;
+// 读取设置
+var mStorage = storages.create('settings');
+function global_sleep_time() {
+    return parseInt(mStorage.get('global_sleep_time'));
+}
+function global_sleep_time_inMission() {
+    return parseInt(mStorage.get('global_sleep_time_inMission'));
+}
+function global_swipe_sleep_tile() {
+    return parseInt(mStorage.get('global_swipe_sleep_tile'));
+}
+function global_click_count() {
+    return parseInt(mStorage.get('global_click_count'));
+}
 
 
 // root操作对象初始化
@@ -83,15 +92,16 @@ function mSleep(time) {
  * @description 根据图片素材点击位置
  * @param {images} img_beclick 准备要点击的图片
  * @param {boolean} outside 是否点击图片周边
+ * @param {number} jindu 查找精度
  * @returns {boolean} 是否成功
  */
-function click_by_img(img_beclick_path, outside, index) {
+function click_by_img(img_beclick_path, outside, jindu) {
     // 尝试次数
     var count = 0;
     // 根据传入路径初始化图片
     var img_beclick = images.read(img_beclick_path);
     // 找多次找不到就失败
-    while (count < global_click_count) {
+    while (count < global_click_count()) {
         console.log(img_beclick_path + "count" + count);
         // 在当前画面找
         console.log('img_beclick:' + img_beclick);
@@ -99,7 +109,7 @@ function click_by_img(img_beclick_path, outside, index) {
         console.log('device_screen:' + device_screen) // console.log log
         var result_point = null;
         var result_list = images.matchTemplate(device_screen, img_beclick, {
-            threshold: 0.9
+            threshold: jindu
         })
         mSleep(2000);
         // 如果匹配到多个点，选最好的，选错了我也懒得管了wdnmd
@@ -161,7 +171,7 @@ function swipeReturn() {
     console.log('正在滑动复位..');
     for(var i = 0; i < 5; i++) {
         mSwipe('right');
-        sleep(global_swipe_sleep_tile);
+        sleep(global_swipe_sleep_tile());
     }
 }
 
@@ -171,7 +181,7 @@ function swipeReturn() {
  * @returns {boolean} 是否成功
  */
 function open_main_menu() {
-    return click_by_img(getLocalImgPath('img_main_open_menu'), false);
+    return click_by_img(getLocalImgPath('img_main_open_menu'), false,  0.8);
 }
 
 
@@ -180,7 +190,7 @@ function open_main_menu() {
  * @returns {boolean} 是否成功
  */
 function choose_ZuoZhan() {
-    return click_by_img(getLocalImgPath('img_choose_menu_ZuoZhan'), false);
+    return click_by_img(getLocalImgPath('img_choose_menu_ZuoZhan'), false, 0.8);
 }
 
 
@@ -191,7 +201,7 @@ function choose_ZuoZhan() {
 function to_GoGoGo() {
     if (open_main_menu()) {
         console.log('open_menu success!!!');
-        mSleep(global_sleep_time);
+        mSleep(global_sleep_time());
         if (choose_ZuoZhan()) {
             return true;
         }
@@ -203,14 +213,15 @@ function to_GoGoGo() {
 
 /**
  * @description 根据类值选择点击图片
- * @param {string} activity.value
+ * @param {string} str 去哪
+ * @param {number} jindu 查找图片的精度
  * @returns {boolean} 是否成功
  */
-function to_where(str) {
+function to_where(str, jindu) {
     var swipe_count = 0;
     console.log('stepIn_1');
     // 如果首次找不到，就复位到最左侧
-    if (click_by_img(getLocalImgPath('img_'+str), false)){
+    if (click_by_img(getLocalImgPath('img_'+str), false, jindu)){
         console.log('stepIn_2');
         return true;
     } else {
@@ -218,11 +229,11 @@ function to_where(str) {
         swipeReturn();
         // 找不到就往左滑动一次，5次机会
         while(swipe_count < 5) {
-            if (click_by_img(getLocalImgPath('img_'+str), false)){
+            if (click_by_img(getLocalImgPath('img_'+str), false, jindu)){
                 return true;
             }
             mSwipe('left')
-            sleep(global_swipe_sleep_tile);
+            sleep(global_swipe_sleep_tile());
             swipe_count++;
         }
     }
@@ -236,14 +247,14 @@ function to_where(str) {
  * @returns {boolean} 是否成功
  */
 function mission_start() {
-    if (click_by_img(getLocalImgPath('img_mission_start'))) {
-        mSleep(global_sleep_time);
-        if (click_by_img(getLocalImgPath('img_mission_start_confirm'))) {
-            mSleep(global_sleep_time_inMission);
-            while (!click_by_img(getLocalImgPath('img_mission_finish'), true)) {
-                mSleep(global_sleep_time_inMission);
+    if (click_by_img(getLocalImgPath('img_mission_start'), false, 0.8)) {
+        mSleep(global_sleep_time());
+        if (click_by_img(getLocalImgPath('img_mission_start_confirm'), false, 0.8)) {
+            mSleep(global_sleep_time_inMission());
+            while (!click_by_img(getLocalImgPath('img_mission_finish'), true, 0.8)) {
+                mSleep(global_sleep_time_inMission());
             }
-            mSleep(global_sleep_time);
+            mSleep(global_sleep_time());
         }
     }
     return false;
@@ -270,17 +281,17 @@ action.start = function(item) {
     // to作战界面
     while (!to_GoGoGo()) {
         toast('请进入作战页面');
-        mSleep(global_sleep_time);
+        mSleep(global_sleep_time());
     }
-    mSleep(global_sleep_time);
+    mSleep(global_sleep_time());
     // to normal part1
     console.log('step1');
-    if (to_where(item['part1_value'])) {
-        mSleep(global_sleep_time);
+    if (to_where(item['part1_value']), 0.8) {
+        mSleep(global_sleep_time());
         // to normal part2
         console.log('step2');
-        if (to_where(item['part2_value'])) {
-            mSleep(global_sleep_time);
+        if (to_where(item['part2_value']), 0.8) {
+            mSleep(global_sleep_time());
             console.log('step3');
             // 判断剿灭特殊情况
             if (item['part1_value'] == 'JiaoMie') {
@@ -292,8 +303,8 @@ action.start = function(item) {
                 return true;
             }
             // to normal part3
-            if (to_where(item['part3_value'])) {
-                mSleep(global_sleep_time);
+            if (to_where(item['part3_value']), 0.9) {
+                mSleep(global_sleep_time());
                 // 开始作战
                 while (count > 0) {
                     mission_start();
@@ -309,33 +320,3 @@ action.start = function(item) {
 module.exports = action;
 
 
-
-
-
-/*******************************************************************************/
-/*------------------------------------测试-------------------------------------*/
-/*******************************************************************************/
-
-
-/**
- * @description 测试
- */
-function test() {
-    part1 = 'WuZi';
-    part2 = 'CE';
-    part3 = 'CE_5';
-    if (to_GoGoGo()) {
-        mSleep(global_sleep_time);
-        if (to_where(part1)) {
-            mSleep(global_sleep_time);
-
-            to_where(part2);
-            mSleep(global_sleep_time);
-            
-            to_where(part3);
-            mSleep(global_sleep_time);
-        }
-    }
-    mission_start();
-    exit();
-}

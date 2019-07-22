@@ -2,7 +2,7 @@
 ui.layout(
     <frame>
         <appbar h="auto">
-            <toolbar id='toolbar' textSize="24sp" title="Auto_Arknights"/>
+            <toolbar id='toolbar' textSize="24sp" title="Auto_Arknightsです"/>
         </appbar>
         <scroll marginTop="56">
             <vertical h="*">
@@ -47,16 +47,15 @@ ui.emitter.on('create_options_menu', menu=>{
     menu.add('设置');
     menu.add('检测配置文件更新');
     menu.add('检测缺失素材');
-    menu.add('更新日志');
-    menu.add('注意事项');
-    menu.add('疑难杂症');
-    menu.add('重新下载全部文件');
+    menu.add('清除配置文件');
+    menu.add('食用指南');
     menu.add('关于');
 });
 // 菜单监听
 ui.emitter.on('options_item_selected', (e, item)=>{
     switch(item.getTitle()){
         case '设置':
+            engines.execScriptFile('./view/settings.js');
             break;
         case '检测配置文件更新':
             threads.start(function(){
@@ -68,22 +67,16 @@ ui.emitter.on('options_item_selected', (e, item)=>{
                 check_sucai();
             });
             break;
-        case '更新日志':
-            update_log();
+        case '食用指南':
+            app.openUrl('http://norah1to.com:6363/help');
             break;
-        case '注意事项':
-            notice();
-            break;
-        case '疑难杂症':
-            question();
-            break;
-        case '重新下载全部文件':
+        case '清除配置文件':
             threads.start(function(){
                 re_download_all_files();
             });
             break;
         case '关于':
-            about();
+            engines.execScriptFile('./view/about.js');
             break;
     }
     e.consumed = true;
@@ -92,6 +85,8 @@ activity.setSupportActionBar(ui.toolbar);
 
 // 初始化动作类
 var action = null;
+// 初始化本地储存键值对
+var mStorage = storages.create('settings');
 
 // 监听回到应用时有无无障碍
 ui.emitter.on("resume", function() {
@@ -148,6 +143,29 @@ ui.autoService.on("check", function(checked) {
 /*******************************************************************/
 
 check_config();
+init_settings();
+
+/**
+ * @description 初始化设置
+ */
+function init_settings() {
+    // 全局操作间隔
+    if (!mStorage.contains('global_sleep_time')) {
+        mStorage.put('global_sleep_time', 1000);
+    }
+    // 关卡内检测是否完成的间隔
+    if (!mStorage.contains('global_sleep_time_inMission')) {
+        mStorage.put('global_sleep_time_inMission', 40000);
+    }
+    // 滑动等待间隔
+    if (!mStorage.contains('global_swipe_sleep_time')) {
+        mStorage.put('global_swipe_sleep_time', 4500);
+    }
+    // 点击容错次数
+    if (!mStorage.contains('global_click_count')) {
+        mStorage.put('global_click_count', 2);
+    }
+}
 
 
 /**
@@ -261,6 +279,12 @@ function re_download_all_files() {
         if (files.remove('/sdcard/Auto_Arknights/imgPath.json')) {
             console.log('imgPath.json成功');
         }
+        dialog_list_1 = [];
+        dialog_list_1_value = {};
+        dialog_list_2 = [];
+        dialog_list_2_value = {};
+        dialog_list_3 = [];
+        dialog_list_3_value = {};
     });
     mthread.join();
     download_config('删除所有文件成功');
@@ -402,72 +426,6 @@ function download(info_obj, type) {
 /*******************************************************************/
 
 
-/**
- * @description 更新日志
- */
-function update_log() {
-    alert(
-        '\n1.3.1:'+
-        '\n * 现在可以自律高收益主线关卡了'+
-        '\n * 提高了识别准确度'+
-        '\n'+
-        '\n1.2.0:'+
-        '\n * 砍掉了root运行方式（问题太多不好使）'+
-        '\n * 可以定义一个关卡的次数，提高效率'+
-        '\n'+
-        '\n1.1.0:'+
-        '\n * 优化判断逻辑，减少失误率'+
-        '\n * 图片改为动态加载，减少崩溃概率'+
-        '\n'+
-        '\n1.0.1:'+
-        '\n * 更新了活动素材'+
-        '\n'+
-        '\n1.0.0:'+
-        '\n * 第一版'
-    );
-}
-
-
-/**
- * @description 注意事项
- */
-function notice() {
-    alert(
-        '1、必须开启无障碍服务'+
-        '\n2、除了剿灭外必须四个选项选满'+
-        '\n3、音量上键可以停止所有操作'+
-        '\n4、本软件仅供交流学习，任何使用本软件产生的损失作者概不负责'+
-        '\n5、因为有些关卡图片长得太像（比如CE-1、2、3、4、5），推荐直接选收益最高的不容易识别错'+
-        '\n6、关卡必须至少手动放弃一次才能识别到（因为没有放弃过的关卡图标较特殊）'
-    );
-}
-
-
-/**
- * @description 疑难杂症
- */
-function question() {
-    alert(
-        'Q：一直提示\"请进入作战页面\"？'+
-        '\nA：请切换到游戏主界面点击\"作战\"按钮后的那个界面，这个界面脚本才会开始运行。若还是不行，请彻底杀死脚本进程，重新开关脚本的无障碍服务，这是auto.js的bug\n'+
-        '\nQ：没有反应？'+
-        '\nA：目前已知flyme会出现各种用不了的情况，我也不知道为啥，其他手机请多次尝试\n'+
-        '\n其他问题请酷安私信 @野良人，或者加下关于中的QQ反馈'
-    );
-}
-
-
-/**
- * @description 关于
- */
-function about() {
-    alert(
-        '酷安 @野良人'+
-        '\n QQ 834053207'+
-        '\n 破群 512249283'
-    )
-}
-
 // 初始化事件列表
 var items = [
 ];
@@ -492,12 +450,24 @@ var dialog_list_3_value = {};
 
 // 预先载入json配置
 var activity_Json = null;
-if (files.exists('/sdcard/Auto_Arknights/activity.json')) {
-    activity_Json = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
-    console.log('事件配置载入成功');
-} else {
-    console.log('找不到事件配置！');
+init_activity_Json();
+
+
+
+/**
+ * @description 初始化activity_Json
+ */
+function init_activity_Json() {
+    if (files.exists('/sdcard/Auto_Arknights/activity.json')) {
+        if (activity_Json == null){
+            activity_Json = JSON.parse(files.read('/sdcard/Auto_Arknights/activity.json'));
+            console.log('事件配置载入成功');
+        }
+    } else {
+        console.log('找不到事件配置！');
+    }
 }
+
 
 
 /**
@@ -542,7 +512,9 @@ function init_third_dialog_list() {
 
 
 // 初始化第一个dialog列表
-init_first_dialog_list();
+if (files.exists('/sdcard/Auto_Arknights/activity.json')){
+    init_first_dialog_list();
+}
 
 // 特殊状态
 var activity_status = null;
@@ -558,6 +530,11 @@ var activity_status = null;
 
 // part1 dialog
 function build_dialog_1() {
+    // 判断是否有配置文件且没有初始化过
+    if (files.exists('/sdcard/Auto_Arknights/activity.json') && dialog_list_1.length == 0){
+        init_activity_Json();
+        init_first_dialog_list();
+    }
     dialogs.build({
         items: dialog_list_1,
         itemsSelectMode: "select",
@@ -669,6 +646,17 @@ function add_item() {
  * @returns {boolean} 是否执行成功
  */
 function startActivitys() {
+    // 第一次进来先让他们看看协议嗷
+    var mStorage = storages.create('settings');
+    if (!mStorage.contains('first')) {
+        mStorage.put('first', 'first');
+        alert(
+            '使用本软件意味着你接受以下协议：\n' + 
+            '1：本软件仅供交流学习，造成的损失作者概不负责\n' +
+            '2: 软件下载后必须24小时内删除\n' +
+            '3: 本软件为开源项目，不得魔改后商用发布(非商业可以)'
+        )
+    }
     toast('事件开始');
     // 事件列表不能为空
     if (items.length < 1) {
@@ -734,8 +722,10 @@ ui.addButton.on('click', add_item);
 // 事件执行相关按钮
 ui.startButton.on('click', startActivitys);
 ui.stopButton.on('click', stopActivitys);
-events.onKeyDown('volume_up', stopActivitys);
-
-
+events.on('key', function(keyCode, event){
+    if (keyCode == keys.volume_up) {
+        stopActivitys();
+    }
+});
 
 
