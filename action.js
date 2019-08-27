@@ -311,6 +311,7 @@ action.start = function(item) {
                 mSleep(global_sleep_time());
                 // 开始作战
                 while (count > 0) {
+                    console.log('mission_count:' + count);
                     mission_start();
                     count--;
                 }
