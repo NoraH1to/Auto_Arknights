@@ -300,6 +300,7 @@ action.start = function(item) {
             if (item['part1_value'] == 'JiaoMie') {
                 // 开始作战
                 while (count > 0) {
+                    console.log('mission_count:' + count);
                     mission_start();
                     count--;
                 }
