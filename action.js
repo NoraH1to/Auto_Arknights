@@ -247,14 +247,17 @@ function to_where(str, jindu) {
  * @returns {boolean} 是否成功
  */
 function mission_start() {
-    if (click_by_img(getLocalImgPath('img_mission_start'), false, 0.8)) {
-        mSleep(global_sleep_time());
-        if (click_by_img(getLocalImgPath('img_mission_start_confirm'), false, 0.8)) {
-            mSleep(global_sleep_time_inMission());
-            while (!click_by_img(getLocalImgPath('img_mission_finish'), true, 0.8)) {
-                mSleep(global_sleep_time_inMission());
-            }
+    for (number = 1; number < 99; number ++){
+        if (click_by_img(getLocalImgPath('img_mission_start' + number), false, 0.8)) {
             mSleep(global_sleep_time());
+            if (click_by_img(getLocalImgPath('img_mission_start_confirm'), false, 0.8)) {
+                mSleep(global_sleep_time_inMission());
+                while (!click_by_img(getLocalImgPath('img_mission_finish'), true, 0.8)) {
+                    mSleep(global_sleep_time_inMission());
+                }
+                mSleep(global_sleep_time());
+                return true;
+            }
         }
     }
     return false;
