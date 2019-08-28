@@ -10,7 +10,7 @@ ui.layout(
                     <Switch id="autoService" text="无障碍服务" textSize="15sp"/>
                     <View marginTop="16" h="1" w="*" bg="#e1e1e1"/>
                     <text marginTop="16" text="事件："/>
-                    <CheckBox id="isAllClear" text="是否活动状态" textSize="15sp"/>
+                    <CheckBox id="isAllClear" text="需要自律的物资、芯片关卡为全周开放状态时，勾选这个" textSize="15sp"/>
                     <horizontal w="*" gravity="center">
                         <button text="SELECT 1" layout_weight="1" id="sp1" style="Widget.AppCompat.Button.Borderless.Colored"/>
                         <button text="SELECT 2" layout_weight="1" id="sp2" style="Widget.AppCompat.Button.Borderless.Colored"/>
@@ -71,7 +71,7 @@ ui.emitter.on('options_item_selected', (e, item)=>{
         case '食用指南':
             app.openUrl('http://norah1to.com:6363/help');
             break;
-        case '清除配置文件':
+        case '清除配置和素材文件':
             threads.start(function(){
                 re_download_all_files();
             });
