@@ -120,7 +120,7 @@ function click_by_img(img_beclick_path, outside, jindu) {
         if (result_point != null) {
             // 随机点击有效位置
             if (outside) {
-                mClick(result_point.x - random(50, 80), result_point.y - random(50, 80))
+                mClick(result_point.x + random(50, 80), result_point.y + random(100, 160))
             } else {
                 mClick(result_point.x + random(1, img_beclick.width), result_point.y + random(1, img_beclick.height))
             }
@@ -247,17 +247,15 @@ function to_where(str, jindu) {
  * @returns {boolean} 是否成功
  */
 function mission_start() {
-    for (number = 1; number < 99; number ++){
-        if (click_by_img(getLocalImgPath('img_mission_start' + number), false, 0.8)) {
-            mSleep(global_sleep_time());
-            if (click_by_img(getLocalImgPath('img_mission_start_confirm'), false, 0.8)) {
+    if (click_by_img(getLocalImgPath('img_mission_start'), true, 0.8)) {
+        mSleep(global_sleep_time());
+        if (click_by_img(getLocalImgPath('img_mission_start_confirm'), false, 0.8)) {
+            mSleep(global_sleep_time_inMission());
+            while (!click_by_img(getLocalImgPath('img_mission_finish'), true, 0.8)) {
                 mSleep(global_sleep_time_inMission());
-                while (!click_by_img(getLocalImgPath('img_mission_finish'), true, 0.8)) {
-                    mSleep(global_sleep_time_inMission());
-                }
-                mSleep(global_sleep_time());
-                return true;
             }
+            mSleep(global_sleep_time());
+            return true;
         }
     }
     return false;
@@ -301,8 +299,9 @@ action.start = function(item) {
                 // 开始作战
                 while (count > 0) {
                     console.log('mission_count:' + count);
-                    mission_start();
-                    count--;
+                    if (mission_start()) {
+                        count--;
+                    }
                 }
                 return true;
             }
@@ -312,8 +311,9 @@ action.start = function(item) {
                 // 开始作战
                 while (count > 0) {
                     console.log('mission_count:' + count);
-                    mission_start();
-                    count--;
+                    if (mission_start()) {
+                        count--;
+                    }
                 }
                 return true;
             }

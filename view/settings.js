@@ -6,7 +6,7 @@ ui.layout(
         </appbar>
         <scroll marginTop="56">
             <vertical padding="16">
-                <text marginTop="8" textSize="16sp" text="全局间隔操作(毫秒) *推荐>500："/>
+                <text marginTop="8" textSize="16sp" text="全局间隔操作(毫秒) *推荐>1000："/>
                 <input hint='单位:毫秒' id="global_sleep_time"/>
                 <text marginTop="8" textSize="16sp" text="检测是否完成关卡的间隔(毫秒) *推荐>30000："/>
                 <input hint='单位:毫秒' id="global_sleep_time_inMission"/>

@@ -20,7 +20,7 @@ ui.layout(
                     <button layout_weight="1" style="Widget.AppCompat.Button.Colored" id="addButton" text="添加事件"></button>
                     <View marginTop="16" h="1" w="*" bg="#e1e1e1"/>
                     <text marginTop="16" text="事件列表，长按可删除："/>
-                    <list h="350" id="todoList" paddingTop="4" paddingBottom="4">
+                    <list h="320" id="todoList" paddingTop="4" paddingBottom="4">
                         <card w="*" h="auto" cardElevation="2dp" cardCornerRadius="2dp" margin="4" foreground="?selectableItemBackground">
                             <horizontal w="*" h="48" gravity='center'>
                                 <View id='action_list_bg' bg="#2196f3" h="*" w="8"/>
@@ -47,7 +47,7 @@ ui.emitter.on('create_options_menu', menu=>{
     menu.add('设置');
     menu.add('检测配置文件更新');
     menu.add('检测缺失素材');
-    menu.add('清除配置文件');
+    menu.add('清除配置和素材文件');
     menu.add('清除日志缓存');
     menu.add('食用指南');
     menu.add('关于');
@@ -171,7 +171,7 @@ function init_settings() {
     }
     // 点击容错次数
     if (!mStorage.contains('global_click_count')) {
-        mStorage.put('global_click_count', 2);
+        mStorage.put('global_click_count', 4);
     }
 }
 
@@ -181,12 +181,11 @@ function init_settings() {
  */
 function check_config() {
     if (files.exists('/sdcard/Auto_Arknights/activity.json') && files.exists('/sdcard/Auto_Arknights/imgPath.json')) {
-        check_config_update();
+        // check_config_update();
     } else {
         download_config('缺少配置文件');
     }
 }
-
 
 
 /**
@@ -257,7 +256,7 @@ function check_config_update() {
             var server_version = JSON.parse(res.body.string());
             if (server_version['activity'] == local_version['activity'] && 
             server_version['imgPath'] == local_version['imgPath']) {
-                alert('配置文件无需更新');
+                toast('配置文件无需更新');
             }
             else {
                 download_config('配置文件发现更新');
@@ -695,6 +694,8 @@ function startActivitys() {
     threads.start(function() {
         // 等待请求截图权限
         setScreenThread.join();
+        // 打开应用
+        app.launch('com.hypergryph.arknights');
         // 遍历事件列表进行事件
         for (var index in items) {
             // 开始事件
